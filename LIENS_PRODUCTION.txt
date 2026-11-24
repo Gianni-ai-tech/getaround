@@ -1,0 +1,11 @@
+Projet Getaround – bloc 5 CDSD – Gianni Murru
+
+Dashboard (analyse des retards) : https://gianni2504-getaround-delay-dashboard.static.hf.space
+Space Hugging Face du dashboard : https://huggingface.co/spaces/Gianni2504/getaround-delay-dashboard
+API – documentation              : https://2qdi4tfk6gyhjvqzmcomm54soe0ykjah.lambda-url.eu-west-3.on.aws/docs
+API – prédiction (POST)          : https://2qdi4tfk6gyhjvqzmcomm54soe0ykjah.lambda-url.eu-west-3.on.aws/predict
+Code (GitHub)                    : https://github.com/Gianni-ai-tech/getaround
+API – documentation interactive  : https://2qdi4tfk6gyhjvqzmcomm54soe0ykjah.lambda-url.eu-west-3.on.aws/swagger
+
+Test :
+curl -i -H "Content-Type: application/json" -X POST -d '{"input": [["Citroën", 140411, 100, "diesel", "black", "convertible", true, true, false, false, true, true, true]]}' https://2qdi4tfk6gyhjvqzmcomm54soe0ykjah.lambda-url.eu-west-3.on.aws/predict
