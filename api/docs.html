@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Getaround – documentation</title>
+<style>
+  body { font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif; margin: 0; background: #f6f2ea; color: #15233a; line-height: 1.55; }
+  header { background: #15233a; color: #f6f2ea; padding: 40px 8vw 32px; }
+  header p { color: #c9d3e0; max-width: 760px; }
+  main { padding: 24px 8vw 64px; max-width: 1000px; }
+  h1 { margin: 0 0 8px; font-size: 2.1rem; }
+  h2 { margin-top: 40px; border-bottom: 2px solid #1f6f7d; padding-bottom: 6px; }
+  h3 { margin-bottom: 6px; }
+  code, pre { font-family: ui-monospace, Consolas, monospace; font-size: .9rem; }
+  pre { background: #15233a; color: #f6f2ea; padding: 16px; border-radius: 8px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; background: #fffdf8; margin: 8px 0 16px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e3dccd; vertical-align: top; }
+  th { background: #ebe5d8; }
+  .verbe { display: inline-block; font-weight: 700; padding: 2px 8px; border-radius: 4px; color: #fff; font-size: .85rem; }
+  .post { background: #e07a2f; } .get { background: #1f6f7d; }
+  .card { background: #fffdf8; border: 1px solid #e3dccd; border-radius: 10px; padding: 4px 20px 12px; margin: 16px 0; }
+  a { color: #1f6f7d; }
+</style>
+</head>
+<body>
+<header>
+  <h1>API Getaround – prix de location suggéré</h1>
+  <p>Cette API suggère aux propriétaires un prix de location par jour (en euros) à partir des caractéristiques de leur voiture. Le modèle est un gradient boosting (scikit-learn) entraîné sur 4 840 voitures, suivi avec MLflow : R² de 0,77 et erreur absolue moyenne d'environ 11 € sur un jeu de test.</p>
+</header>
+<main>
+
+<h2>Endpoints</h2>
+<table>
+  <tr><th>Endpoint</th><th>Méthode</th><th>Entrée</th><th>Sortie</th></tr>
+  <tr><td><code>/predict</code></td><td><span class="verbe post">POST</span></td><td>JSON <code>{"input": [[13 valeurs], …]}</code></td><td>JSON <code>{"prediction": [prix, …]}</code></td></tr>
+  <tr><td><code>/features</code></td><td><span class="verbe get">GET</span></td><td>aucune</td><td>ordre des 13 variables et valeurs connues des variables texte</td></tr>
+  <tr><td><code>/health</code></td><td><span class="verbe get">GET</span></td><td>aucune</td><td><code>{"status": "ok", "modele": "…"}</code></td></tr>
+  <tr><td><code>/docs</code></td><td><span class="verbe get">GET</span></td><td>aucune</td><td>cette page</td></tr>
+  <tr><td><code>/swagger</code></td><td><span class="verbe get">GET</span></td><td>aucune</td><td>documentation interactive (OpenAPI) pour tester l'API dans le navigateur</td></tr>
+</table>
+
+<div class="card">
+<h3><span class="verbe post">POST</span> <code>/predict</code></h3>
+<p>Prend une liste de voitures. Chaque voiture est une liste de <b>13 valeurs, dans cet ordre</b> :</p>
+<table>
+  <tr><th>#</th><th>Variable</th><th>Type</th><th>Exemple</th></tr>
+  <tr><td>1</td><td><code>model_key</code></td><td>texte : marque (Citroën, Renault, BMW, Peugeot, Audi…)</td><td><code>"Citroën"</code></td></tr>
+  <tr><td>2</td><td><code>mileage</code></td><td>nombre : kilométrage</td><td><code>140411</code></td></tr>
+  <tr><td>3</td><td><code>engine_power</code></td><td>nombre : puissance (ch)</td><td><code>100</code></td></tr>
+  <tr><td>4</td><td><code>fuel</code></td><td>texte : diesel, petrol, hybrid_petrol, electro</td><td><code>"diesel"</code></td></tr>
+  <tr><td>5</td><td><code>paint_color</code></td><td>texte : black, grey, blue, white, brown, silver…</td><td><code>"black"</code></td></tr>
+  <tr><td>6</td><td><code>car_type</code></td><td>texte : estate, sedan, suv, hatchback, subcompact, coupe, convertible, van</td><td><code>"convertible"</code></td></tr>
+  <tr><td>7</td><td><code>private_parking_available</code></td><td>booléen</td><td><code>true</code></td></tr>
+  <tr><td>8</td><td><code>has_gps</code></td><td>booléen</td><td><code>true</code></td></tr>
+  <tr><td>9</td><td><code>has_air_conditioning</code></td><td>booléen</td><td><code>false</code></td></tr>
+  <tr><td>10</td><td><code>automatic_car</code></td><td>booléen</td><td><code>false</code></td></tr>
+  <tr><td>11</td><td><code>has_getaround_connect</code></td><td>booléen</td><td><code>true</code></td></tr>
+  <tr><td>12</td><td><code>has_speed_regulator</code></td><td>booléen</td><td><code>true</code></td></tr>
+  <tr><td>13</td><td><code>winter_tires</code></td><td>booléen</td><td><code>true</code></td></tr>
+</table>
+<p>Une valeur texte inconnue du modèle (une marque rare, par exemple) est acceptée et traitée comme une catégorie peu fréquente. Les booléens acceptent aussi <code>0</code> / <code>1</code> et <code>"true"</code> / <code>"false"</code>.</p>
+
+<h3>Exemple de requête</h3>
+<pre>{
+  "input": [
+    ["Citroën", 140411, 100, "diesel", "black", "convertible", true, true, false, false, true, true, true],
+    ["Citroën", 13929, 317, "petrol", "grey", "convertible", true, true, false, false, false, true, true]
+  ]
+}</pre>
+<h3>Exemple de réponse</h3>
+<pre>{
+  "prediction": [108.9, 262.53]
+}</pre>
+<p>Chaque valeur est le prix suggéré par jour, en euros, dans l'ordre des voitures envoyées.</p>
+
+<h3>Erreurs</h3>
+<p>Code <code>422</code> avec un message explicite si une voiture n'a pas 13 valeurs, si <code>mileage</code> ou <code>engine_power</code> n'est pas un nombre, ou si une option n'est pas un booléen.</p>
+</div>
+
+<h2>Appeler l'API</h2>
+<h3>curl</h3>
+<pre id="curl">curl -i -H "Content-Type: application/json" -X POST \
+  -d '{"input": [["Citroën", 140411, 100, "diesel", "black", "convertible", true, true, false, false, true, true, true]]}' \
+  <span class="url">https://VOTRE-URL</span>/predict</pre>
+<h3>Python</h3>
+<pre>import requests
+
+response = requests.post("<span class="url">https://VOTRE-URL</span>/predict", json={
+    "input": [["Citroën", 140411, 100, "diesel", "black", "convertible", True, True, False, False, True, True, True]]
+})
+print(response.json())</pre>
+
+<h2>À propos du modèle</h2>
+<p>Pipeline scikit-learn : encodage one-hot des variables texte (catégories de moins de 10 voitures regroupées), standardisation du kilométrage et de la puissance, puis <code>HistGradientBoostingRegressor</code>. Comparé avec MLflow à une régression linéaire (R² 0,71), une régression Ridge (0,71) et une forêt aléatoire (0,75). Les variables les plus influentes sont la puissance, le kilométrage et la marque.</p>
+<p>Code et notebooks : voir le dépôt GitHub du projet.</p>
+</main>
+<script>
+  // Remplace l'adresse d'exemple par celle de la page
+  document.querySelectorAll(".url").forEach(e => e.textContent = location.origin);
+</script>
+</body>
+</html>
